@@ -1,131 +1,141 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import * as React from "react";
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import {AppState, Linking} from "react-native";
+import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+  showConversation,
+  handleProactiveLink,
+  helpshiftEmitter,
+  onAppBackground,
+  onAppForeground,
+  helpshiftConstants,
+  onEventOccurredListener,
+  onUserAuthFailedListener,
+  HelpshiftEventData
+} from "helpshift-plugin-sdkx-react-native";
+import {notificationListenerAndroid, notificationListeneriOS} from "./notificationService";
+import {init, isAndroid} from "./util";
+import {Notifications} from "react-native-notifications";
+import {isIos} from "./util";
+import {NavigationContainer} from "@react-navigation/native";
+import RootNavigationStack from "./RootNavigationStack";
+import {AppProvider, useAppContext} from "./data/AppContext";
+import CustomModal from "./component/EventLoggerModal";
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const App = () => {
+  const installCallDelayed = React.useRef(false);
+  const appState = React.useRef(AppState.currentState);
+  const {addEvent, setEventModalPresented, eventModalPresented} = useAppContext();
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === "active") {
+        console.log("App has come to the foreground!");
+        if (installCallDelayed.current) {
+          onAppForeground();
+        }
+      }
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+      appState.current = nextAppState;
+      console.log("AppState", appState.current);
+      if (appState.current === "background" && installCallDelayed.current) {
+        onAppBackground();
+      }
+    });
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+    init(installCallDelayed.current);
+    getStorage();
+    registerNotification();
+    const helpshiftEvent = onEventOccurredListener(handleEvent);
+    const onUserAuthFailed = onUserAuthFailedListener(handleUserAuthFailed);
+    handleDeeplink();
+    return () => {
+      helpshiftEvent.remove();
+      onUserAuthFailed.remove();
+      subscription.remove();
+      Linking.removeAllListeners("url");
+    };
+  }, []);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  // 3. Wrap listeners in useCallback if they have dependencies
+  const handleEvent = React.useCallback((payload: HelpshiftEventData) => {
+    addEvent({
+      eventName: payload.eventName,
+      eventData: payload.eventData
+    });
+  }, []);
+
+  const handleUserAuthFailed = React.useCallback((payload: HelpshiftEventData) => {
+    addEvent({
+      eventName: payload.eventName,
+      eventData: payload.eventData
+    });
+  }, []);
+
+  const handleDeeplink = async () => {
+    const apiConfig = {
+      presentFullScreenOniPad: false
+    };
+
+    /**
+     * Linking addEventListener is called when app is already open, app is foregrounded
+     */
+    Linking.addEventListener("url", (callback) => {
+      const path = callback.url.split("//");
+      if (path[1] === "chat") {
+        showConversation(apiConfig);
+      }
+    });
+
+    /**
+     * Linking.getInitialURL is called when app is closed will return promise
+     */
+    const initialUrl = await Linking.getInitialURL();
+    if (initialUrl !== null) {
+      const path = initialUrl.split("//");
+      if (path[1] === "chat") {
+        showConversation(apiConfig);
+      }
+    }
   };
 
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the recommendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
+  const getStorage = async () => {
+    try {
+      const value = await AsyncStorage.getItem("@ProactiveData");
+      if (value !== null) {
+        // We have data!!
+        console.log("getting storage data", value);
+        handleProactiveLink(value, {});
+        AsyncStorage.removeItem("@ProactiveData");
+      }
+    } catch (error: any) {
+      // Error retrieving data
+      console.error("App error storage:", error.message ?? error);
+    }
+  };
+
+  const registerNotification = async () => {
+    if (isAndroid) {
+      notificationListenerAndroid();
+    } else {
+      Notifications.registerRemoteNotifications();
+      notificationListeneriOS();
+    }
+  };
 
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
+    <NavigationContainer>
+      <CustomModal visible={eventModalPresented} onClose={() => setEventModalPresented(false)} />
+      <RootNavigationStack />
+    </NavigationContainer>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+const WrappedApp = () => (
+  <AppProvider>
+    <App />
+  </AppProvider>
+);
 
-export default App;
+export default WrappedApp;
