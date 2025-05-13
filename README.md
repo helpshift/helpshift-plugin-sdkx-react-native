@@ -66,7 +66,7 @@ This is one way to run your app — you can also build it directly from Android 
 
 ### Initialize
 
-Initialize SDK by calling install method before any other interaction with the Helpshift SDK in App.tsx.(It should be used in the useEffect hook in react native call). [For more details click here](/helpshift-plugin-sdkx-react-native/blob/main/src/util.ts)
+Initialize SDK by calling install method before any other interaction with the Helpshift SDK in App.tsx.(It should be used in the useEffect hook in react native call). [For more details click here](/blob/main/src/util.ts)
 
 For details on install API, follow [Helpshift Developer Guide](https://developers.helpshift.com/sdkx-react-native/getting-started/#initializing).
 
@@ -108,7 +108,7 @@ if (appId != null) {
 
 ### showConversation
 
-The showConversation API launches the Helpshift in-app chat interface, allowing users to start or continue a support conversation. The optional config parameter lets you customize the behavior of the conversation screen—for example, setting tags, custom issue fields (CIFs). Make sure the Helpshift SDK is initialized before calling this function.[more info](/helpshift-plugin-sdkx-react-native/blob/main/src/component/Conversation.tsx)
+The showConversation API launches the Helpshift in-app chat interface, allowing users to start or continue a support conversation. The optional config parameter lets you customize the behavior of the conversation screen—for example, setting tags, custom issue fields (CIFs). Make sure the Helpshift SDK is initialized before calling this function.[more info](/blob/main/src/component/Conversation.tsx)
 
 For details on showConversation API, follow [Helpshift Developer Guide](https://developers.helpshift.com/sdkx-react-native/support-tools/#conversation-view).
 
@@ -149,7 +149,7 @@ Where <SDK_CONFIGRATION_OBJECT_MAP> is config object. you can refer [here](https
 
 ### setLanguage
 
-You can set the SDK language using this API. By default, the device's preferred language is used by the SDK. [more info](/helpshift-plugin-sdkx-react-native/blob/main/src/component/Language.tsx)
+You can set the SDK language using this API. By default, the device's preferred language is used by the SDK. [more info](/blob/main/src/component/Language.tsx)
 
 ```
 setLanguage(<LANGUAGE_CODE>)
@@ -161,7 +161,7 @@ For <LANGUAGE_CODE> please refer this document [here](https://developers.helpshi
 
 For details on SDK Configuration, follow the [SDK Configuration page on Helpshift Developer Guide](https://developers.helpshift.com/sdkx-react-native/sdk-configuration/).
 
-Example Implementation: Refer to the ConfigScreen.tsx [file](/helpshift-plugin-sdkx-react-native/blob/main/src/screens/ConfigScreen.tsx)
+Example Implementation: Refer to the ConfigScreen.tsx [file](/blob/main/src/screens/ConfigScreen.tsx)
 
 ### enableLogging
 
@@ -195,7 +195,7 @@ showConversation(config);
 
 For details on user related APIs, follow [Helpshift Developer Guide](https://developers.helpshift.com/sdkx-react-native/users/).
 
-Example Implementation: Refer to the UserLoginScreen screen [file](/helpshift-plugin-sdkx-react-native/blob/main/src/screens/UserLoginScreen.tsx)
+Example Implementation: Refer to the UserLoginScreen screen [file](/blob/main/src/screens/UserLoginScreen.tsx)
 
 ## User Hub
 
@@ -203,7 +203,7 @@ Helpshift’s new User Identity System (User Hub) into our app, replacing the le
 
 For details on user related APIs, follow [Helpshift Developer Guide](https://developers.helpshift.com/sdkx_ios/identity-user-hub/).
 
-Example Implementation: Refer to the UserLoginScreen screen [file](/helpshift-plugin-sdkx-react-native/blob/main/src/screens/UserIdentityLoginScreen.tsx)
+Example Implementation: Refer to the UserLoginScreen screen [file](/blob/main/src/screens/UserIdentityLoginScreen.tsx)
 
 ### Login
 
@@ -226,7 +226,7 @@ logout()
 
 You need to install your notification plugin to use notifications. Use the `registerPushToken` and `handlePush` APIs for this. Refer [iOS](https://developers.helpshift.com/sdkx-react-native/notifications-ios/) and [Android](https://developers.helpshift.com/sdkx-react-native/notifications-android) Helpshift Developer Guide for more details.
 
-Example Implementation [Refer](/helpshift-plugin-sdkx-react-native/blob/main/src/notificationService.ts)
+Example Implementation [Refer](/blob/main/src/notificationService.ts)
 
 For details on setLanguage API, follow [Helpshift Developer Guide for iOS](https://developers.helpshift.com/sdkx-react-native/notifications-ios/) and [Helpshift Developer Guide for Android](https://developers.helpshift.com/sdkx-react-native/notifications-android/).
 
@@ -237,11 +237,3 @@ handleProactiveLink(<PROACTIVE_LINK> , <USER_LOCAL_CONFIG>);
 ```
 
 Refer [Helpshift Developer Guide For Outbound Support](https://developers.helpshift.com/sdkx-react-native/outbound-support/) for more details.
-
-### User Hub
-
-This project integrates Helpshift’s new User Identity System (User Hub) into our app, replacing the legacy method of user identification. The system uses secure, JWT-based login to authenticate users and improve the agent experience with faster context collection, enhanced security, and spam protection
-
-Example Implementation [Refer](/helpshift-plugin-sdkx-react-native/blob/main/src/screens/UserIdentityLoginScreen.tsx)
-
-Refer [Helpshift Developer Guide For User Hub](https://developers.helpshift.com/sdkx-react-native/identity-user-hub/) for more details.
